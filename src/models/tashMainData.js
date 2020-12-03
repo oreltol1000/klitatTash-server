@@ -2,25 +2,33 @@ const mongoose = require('mongoose')
 
 const taskSchema = mongoose.Schema(
   {
-    description: {
+    personalNumber: {
       type: String,
       required: true,
       trim: true
     },
-    completed: {
+    teamNumber: {
+      type: String,
+      default: false,
+      ref: 'KlitaTash' //to get team by tash
+    },
+    questionsAndAnswers: {
+      type: Array,
+      required: true,
+    },
+    isMashakitAprove: {
       type: Boolean,
       default: false
     },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'User' //to get user by task
+    isKzinaAprove: {
+      type: Boolean,
+      default: false      
     }
   },
   {
     timestamps: true
   }
 )
-const Task = mongoose.model('Task', taskSchema)
+const Tash = mongoose.model('Tash', taskSchema)
 
-module.exports = Task
+module.exports = Tash

@@ -2,122 +2,68 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const Task = require('./tashMainData')
+const Tash = require('./tashMainData')
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true
+    teamID: {
+        type: String,
+        required: true,
+        trim: true
     },
-    email: {
-      type: String,
-      unique: true, //will be a uniwue key
+    unitName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    unitNumber: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    klitaDate: {
+      type: Date,
       required: true,
-      trim: true,
-      lowercase: true,
-      validate(value) {
-        if (!validator.isEmail(value)) {
-          throw new Error('Email is invalid')
-        }
-      }
+      trim: false
     },
     password: {
       type: String,
       required: true,
-      minlength: 7,
-      trim: true,
-      validate(value) {
-        if (value.toLowerCase().includes('password')) {
-          throw new Error('Password cannot contain "password"')
-        }
-      }
+      trim: true
     },
-    age: {
-      type: Number,
-      default: 0,
-      validate(value) {
-        if (value < 0) {
-          throw new Error('Age must be a postive number')
-        }
-      }
-    },
-    tokens: [
-      {
-        token: {
-          type: String,
-          required: true
-        }
-      }
-    ],
-    avatar: {
-      type: Buffer
+    managers: {
+      type: Array,
+      required: false,
+      trim: true
     }
   },
   {
     timestamps: true
   }
 )
-// instance method - for specific user
-userSchema.methods.generateAuthTokenorel = async function() {
-  // not must-just for us
-  const user = this
-  const token = jwt.sign({ _id: user._id.toString() }, process.env.jwt_secret, {
-    expiresIn: '1 days'
-  })
-  user.tokens = user.tokens.concat({ token })
-  await user.save()
-  return token
-}
 
 // when we doing a request we will not get this elements in body response
 userSchema.methods.toJSON = function() {
-  const user = this
-  const userObject = user.toObject()
-  delete userObject.password
-  delete userObject.tokens
-  delete userObject.avatar
+  const team = this
 
-  return userObject
+  return team.toObject()
 }
 
 // static method
-userSchema.statics.findByCredentialsorel = async (email, password) => {
-  const user = await User.findOne({ email })
-  if (!user) {
-    throw new Error('unable find user')
+userSchema.statics.findByTeamID = async (id) => {
+  const teamID = await KlitaTeam.findOne({ teamID: id })
+  if (!teamID) {
+    throw new Error('Unable find team')
   }
-  const isMatch = await bcrypt.compare(password, user.password)
-  if (!isMatch) {
-    throw new Error('Unable to login')
-  }
-  return user
+  return teamID
 }
 
-//middleware functions
-userSchema.pre('save', async function(next) {
-  const user = this //validate this is write and wait to send
-  // console.log('before saving')
-  if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 8)
-  }
-  next()
+// create foreign key KlitaTeam->Tash, to get tash data for klitaTeam
+userSchema.virtual('teamTash', {
+  ref: 'Tash', //ref to tash
+  localField: 'teamNumber', // team has team.teamNumber
+  foreignField: 'teamNumber' // tash has field 'teamNumber' that has klitaTeam.teamNumber
 })
+const KlitaTeam = mongoose.model('KlitaTeam', userSchema)
 
-// Delete user task when user remove
-userSchema.pre('remove', async function(next) {
-  const user = this
-  await Task.deleteMany({ owner: user._id })
-  next()
-})
-
-// create foreign key task->user , for get tasks for user
-userSchema.virtual('userTasks', {
-  ref: 'Task', //ref to task
-  localField: '_id', //task has user._id
-  foreignField: 'owner' //task has field 'owner' that has user._id
-})
-const User = mongoose.model('User', userSchema)
-
-module.exports = User
+module.exports = KlitaTeam
