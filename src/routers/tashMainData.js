@@ -1,124 +1,147 @@
 const express = require('express')
-const Task = require('../models/tashMainData')
+const Tash = require('../models/tashMainData')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 
-router.post('/tasks', auth, async (req, res) => {
-  //const task = new Task(req.body)
-  const task = new Task({
-    ...req.body, //copy all rows from req task
-    owner: req.user._id
+router.post('/saveSoldierQuestionnaire', async (req, res) =>{
+  const questionsAndAnswers = []
+  Object.keys(req.body).forEach((key) =>{
+    console.log(key,req.body[key])
+    if(key.includes('question')){
+      const obj = {}
+      obj[key] = req.body[key]
+      
+      questionsAndAnswers.push(obj)
+    }
   })
   try {
-    await task.save()
-    res.status(201).send(task)
+    const tash = new Tash({
+      ...req.body, //copy all rows from req tash
+      questionsAndAnswers
+    })
+    await tash.save()
+    res.status(201).send(tash)
   } catch (e) {
     res.status(400).send(e)
   }
 })
 
-//GET /tasks?completd=true
-// GET /tasks?limit=106(how much to get&skip=0(from wich index i start)
-//GET /tasks?sortBy=createdAt_asc or createdAt_dec
-router.get('/tasks', auth, async (req, res) => {
-  const match = {}
-  if (req.query.completed) {
-    match.completed = req.query.completed === 'true'
-  }
-  // let sortOption = 1
-  if (req.query.sortBy) {
-    let sortOption = req.query.sortBy === 'createdAt_dec' ? -1 : 1
-  }
+// router.post('/tasks', auth, async (req, res) => {
+//   //const task = new Task(req.body)
+//   const task = new Task({
+//     ...req.body, //copy all rows from req task
+//     owner: req.user._id
+//   })
+//   try {
+//     await task.save()
+//     res.status(201).send(task)
+//   } catch (e) {
+//     res.status(400).send(e)
+//   }
+// })
 
-  try {
-    // option 2
-    await req.user
-      .populate({
-        path: 'userTasks',
-        match,
-        options: {
-          limit: parseInt(req.query.limit),
-          skip: parseInt(req.query.skip),
-          sort: {
-            createdAt: sortOption //decending
-          }
-        }
-      })
-      .execPopulate()
-    res.send(req.user.userTasks)
-  } catch (e) {
-    res.status(500).send()
-  }
-})
+// //GET /tasks?completd=true
+// // GET /tasks?limit=106(how much to get&skip=0(from wich index i start)
+// //GET /tasks?sortBy=createdAt_asc or createdAt_dec
+// router.get('/tasks', auth, async (req, res) => {
+//   const match = {}
+//   if (req.query.completed) {
+//     match.completed = req.query.completed === 'true'
+//   }
+//   // let sortOption = 1
+//   if (req.query.sortBy) {
+//     let sortOption = req.query.sortBy === 'createdAt_dec' ? -1 : 1
+//   }
 
-router.get('/tasks/:id', auth, async (req, res) => {
-  try {
-    const task = await Task.findOne({
-      _id: req.params.id,
-      owner: req.user._id
-    })
+//   try {
+//     // option 2
+//     await req.user
+//       .populate({
+//         path: 'userTasks',
+//         match,
+//         options: {
+//           limit: parseInt(req.query.limit),
+//           skip: parseInt(req.query.skip),
+//           sort: {
+//             createdAt: sortOption //decending
+//           }
+//         }
+//       })
+//       .execPopulate()
+//     res.send(req.user.userTasks)
+//   } catch (e) {
+//     res.status(500).send()
+//   }
+// })
 
-    if (!task) {
-      return res.status(404).send()
-    }
+// router.get('/tasks/:id', auth, async (req, res) => {
+//   try {
+//     const task = await Task.findOne({
+//       _id: req.params.id,
+//       owner: req.user._id
+//     })
 
-    res.send(task)
-  } catch (e) {
-    res.status(500).send()
-  }
-})
+//     if (!task) {
+//       return res.status(404).send()
+//     }
 
-router.patch('/tasks/:id', auth, async (req, res) => {
-  const updates = Object.keys(req.body)
-  const allowedUpdates = ['description', 'completed']
-  const isValidOperation = updates.every(update =>
-    allowedUpdates.includes(update)
-  )
+//     res.send(task)
+//   } catch (e) {
+//     res.status(500).send()
+//   }
+// })
 
-  if (!isValidOperation) {
-    return res.status(400).send({ error: 'Invalid updates!' })
-  }
+// router.patch('/tasks/:id', auth, async (req, res) => {
+//   const updates = Object.keys(req.body)
+//   const allowedUpdates = ['description', 'completed']
+//   const isValidOperation = updates.every(update =>
+//     allowedUpdates.includes(update)
+//   )
 
-  try {
-    const task = await Task.findOne({
-      _id: req.params.id,
-      owner: req.user._id
-    })
+//   if (!isValidOperation) {
+//     return res.status(400).send({ error: 'Invalid updates!' })
+//   }
 
-    if (!task) {
-      return res.status(404).send()
-    }
+//   try {
+//     const task = await Task.findOne({
+//       _id: req.params.id,
+//       owner: req.user._id
+//     })
 
-    // update every field
-    updates.forEach(update => {
-      task[update] = req.body[update]
-    })
+//     if (!task) {
+//       return res.status(404).send()
+//     }
 
-    // save changes-we do it here because we dont want the method "before saving" in middleware
-    await task.save()
+//     // update every field
+//     updates.forEach(update => {
+//       task[update] = req.body[update]
+//     })
 
-    res.send(task)
-  } catch (e) {
-    res.status(400).send(e)
-  }
-})
+//     // save changes-we do it here because we dont want the method "before saving" in middleware
+//     await task.save()
 
-router.delete('/tasks/:id', auth, async (req, res) => {
-  try {
-    const task = await Task.findOneAndDelete({
-      _id: req.params.id,
-      owner: req.user._id
-    })
-    console.log(task)
+//     res.send(task)
+//   } catch (e) {
+//     res.status(400).send(e)
+//   }
+// })
 
-    if (!task) {
-      res.status(404).send()
-    }
+// router.delete('/tasks/:id', auth, async (req, res) => {
+//   try {
+//     const task = await Task.findOneAndDelete({
+//       _id: req.params.id,
+//       owner: req.user._id
+//     })
+//     console.log(task)
 
-    res.send(task)
-  } catch (e) {
-    res.status(500).send()
-  }
-})
+//     if (!task) {
+//       res.status(404).send()
+//     }
+
+//     res.send(task)
+//   } catch (e) {
+//     res.status(500).send()
+//   }
+// })
 
 module.exports = router
