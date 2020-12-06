@@ -3,26 +3,49 @@ const Tash = require('../models/tashMainData')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 
-router.post('/saveSoldierQuestionnaire', async (req, res) =>{
-  const questionsAndAnswers = []
-  Object.keys(req.body).forEach((key) =>{
-    console.log(key,req.body[key])
-    if(key.includes('question')){
-      const obj = {}
-      obj[key] = req.body[key]
-      
-      questionsAndAnswers.push(obj)
-    }
-  })
+router.post('/saveSoldierQuestionnaire', async (req, res) => {
+  // const questionsAndAnswers = []
+  // Object.keys(req.body).forEach(key => {
+  //   console.log(key, req.body[key])
+  //   if (key.includes('question')) {
+  //     const obj = {}
+  //     obj[key] = req.body[key]
+
+  //     questionsAndAnswers.push(obj)
+  //   }
+  // })
   try {
     const tash = new Tash({
-      ...req.body, //copy all rows from req tash
-      questionsAndAnswers
+      ...req.body //copy all rows from req tash
+      // questionsAndAnswers
     })
     await tash.save()
     res.status(201).send(tash)
   } catch (e) {
     res.status(400).send(e)
+  }
+})
+
+// for soldiers
+router.get('/getMyData/:teamNo', auth, async (req, res) => {
+  try {
+    //get personal tash data by id*team id
+    const myData = await Tash.findOne({
+      personalNumber: req.personalNumber,
+      teamNumber: req.params.teamNo
+    })
+    //there isn't tash data for this soldier
+    if (!myData) {
+      return res.status(404).send('no data for this soldier')
+    }
+    if (myData.isMashakitAprove === true) {
+      return res.status(404).send('lock by mashakit tash')
+    } else if (myData.isKzinaAprove === true) {
+      return res.status(404).send('lock by kzinat tash')
+    }
+    res.send(myData)
+  } catch (e) {
+    res.status(500).send()
   }
 })
 

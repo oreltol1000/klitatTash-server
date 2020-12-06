@@ -3,23 +3,24 @@ const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Tash = require('./tashMainData')
+const User = require('./User')
 
-const userSchema = new mongoose.Schema(
+const KlitaTeam = new mongoose.Schema(
   {
     teamID: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true
     },
     unitName: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true
     },
     unitNumber: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true
     },
     klitaDate: {
       type: Date,
@@ -42,6 +43,22 @@ const userSchema = new mongoose.Schema(
   }
 )
 
+KlitaTeam.pre('save', async function(next) {
+  const klitaTeam = this //validate this is write and wait to send
+  const users = []
+  klitaTeam.managers.forEach(manager => {
+    users.push(
+      new User({
+        personalNumber: manager.personalNumber,
+        position: manager.position,
+        name: manager.name
+      }).save()
+    )
+  })
+
+  next()
+})
+
 // when we doing a request we will not get this elements in body response
 userSchema.methods.toJSON = function() {
   const team = this
@@ -50,7 +67,7 @@ userSchema.methods.toJSON = function() {
 }
 
 // static method
-userSchema.statics.findByTeamID = async (id) => {
+userSchema.statics.findByTeamID = async id => {
   const teamID = await KlitaTeam.findOne({ teamID: id })
   if (!teamID) {
     throw new Error('Unable find team')
@@ -64,6 +81,6 @@ userSchema.virtual('teamTash', {
   localField: 'teamNumber', // team has team.teamNumber
   foreignField: 'teamNumber' // tash has field 'teamNumber' that has klitaTeam.teamNumber
 })
-const KlitaTeam = mongoose.model('KlitaTeam', userSchema)
+const KlitaTeam = mongoose.model('KlitaTeam', KlitaTeam)
 
 module.exports = KlitaTeam
