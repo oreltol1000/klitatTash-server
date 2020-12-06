@@ -6,8 +6,7 @@ const multer = require('multer')
 const router = new express.Router()
 
 // Create a team name
-router.post('/team', async (req, res) => {
-  
+router.post('/createNewTeam', async (req, res) => {
   const team = new KlitaTeam(req.body)
   console.log(team)
 
@@ -21,14 +20,13 @@ router.post('/team', async (req, res) => {
 
 // Get team name
 router.get('/getTeamName/:id', async (req, res) => {
-  console.log(this);
+  console.log(this)
   try {
-    const team = await KlitaTeam.findByTeamID(req.params.id)  
+    const team = await KlitaTeam.findByTeamID(req.params.id)
     res.status(200).send(team.unitName)
   } catch (error) {
     res.status(404).send({ error: error.message })
   }
-  
 })
 
 module.exports = router

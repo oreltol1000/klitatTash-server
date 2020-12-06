@@ -47,6 +47,13 @@ KlitaTeam.pre('save', async function(next) {
   const klitaTeam = this //validate this is write and wait to send
   const users = []
   klitaTeam.managers.forEach(manager => {
+
+  const user = await User.findOne({
+    personalNumber: manager.personalNumber
+  })
+//check if this user exist
+if(!user){
+  // create new user
     users.push(
       new User({
         personalNumber: manager.personalNumber,
@@ -54,8 +61,8 @@ KlitaTeam.pre('save', async function(next) {
         name: manager.name
       }).save()
     )
+}
   })
-
   next()
 })
 

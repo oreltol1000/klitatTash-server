@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
-    job: {
+    position: {
       type: String,
       required: true,
       trim: true
@@ -39,7 +39,7 @@ userSchema.methods.generateAuthTokenorel = async function() {
   // not must-just for us
   const user = this
   const token = jwt.sign({ _id: user._id.toString() }, process.env.jwt_secret, {
-    expiresIn: '1 days'
+    // expiresIn: '1 days'
   })
   user.tokens = user.tokens.concat({ token })
   await user.save()
@@ -71,14 +71,14 @@ userSchema.statics.findByCredentialsorel = async (email, password) => {
 }
 
 //middleware functions
-userSchema.pre('save', async function(next) {
-  const user = this //validate this is write and wait to send
-  // console.log('before saving')
-  if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 8)
-  }
-  next()
-})
+// userSchema.pre('save', async function(next) {
+//   const user = this //validate this is write and wait to send
+//   // console.log('before saving')
+//   if (user.isModified('password')) {
+//     user.password = await bcrypt.hash(user.password, 8)
+//   }
+//   next()
+// })
 
 // Delete user tashMainData when user remove
 userSchema.pre('remove', async function(next) {

@@ -4,23 +4,12 @@ const auth = require('../middleware/auth')
 const router = new express.Router()
 
 router.post('/saveSoldierQuestionnaire', async (req, res) => {
-  // const questionsAndAnswers = []
-  // Object.keys(req.body).forEach(key => {
-  //   console.log(key, req.body[key])
-  //   if (key.includes('question')) {
-  //     const obj = {}
-  //     obj[key] = req.body[key]
-
-  //     questionsAndAnswers.push(obj)
-  //   }
-  // })
   try {
     const tash = new Tash({
       ...req.body //copy all rows from req tash
-      // questionsAndAnswers
     })
     await tash.save()
-    res.status(201).send(tash)
+    res.status(201).send(tash.recordKey) //success -> send tash id
   } catch (e) {
     res.status(400).send(e)
   }
@@ -47,6 +36,17 @@ router.get('/getMyData/:teamNo', auth, async (req, res) => {
   } catch (e) {
     res.status(500).send()
   }
+})
+
+// Get team name
+router.get('/getAllMainData', auth, async (req, res) => {
+  // try {
+  //   const user = await KlitaTeam.findByTeamID(req.user.personalNumber)
+  //   const user = user.findOne({personalNumber: req.user.personalNumber})
+  //   res.status(200).send(team.unitName)
+  // } catch (error) {
+  //   res.status(404).send({ error: error.message })
+  // }
 })
 
 // router.post('/tasks', auth, async (req, res) => {
