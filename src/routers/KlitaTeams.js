@@ -20,7 +20,6 @@ router.post('/createNewTeam', async (req, res) => {
 
 // Get team name
 router.get('/getTeamName/:id', async (req, res) => {
-  console.log(this)
   try {
     const team = await KlitaTeam.findByTeamID(req.params.id)
     res.status(200).send(team.unitName)

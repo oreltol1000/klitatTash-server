@@ -13,7 +13,7 @@ const tashMainDataSchema = mongoose.Schema(
       required: true,
       trim: true
     },
-    teamNumber: {
+    teamID: {
       type: String,
       default: false,
       ref: 'KlitaTash' //to get team by tash

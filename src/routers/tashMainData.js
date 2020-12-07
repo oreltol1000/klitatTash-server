@@ -1,5 +1,6 @@
 const express = require('express')
 const Tash = require('../models/tashMainData')
+const KlitaTeam = require('../models/KlitaTeams')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 
@@ -18,19 +19,20 @@ router.post('/saveSoldierQuestionnaire', async (req, res) => {
 // for soldiers
 router.get('/getMyData/:teamNo', auth, async (req, res) => {
   try {
+    const user = req.user
     //get personal tash data by id*team id
     const myData = await Tash.findOne({
-      personalNumber: req.personalNumber,
+      personalNumber: user.personalNumber,
       teamNumber: req.params.teamNo
     })
     //there isn't tash data for this soldier
     if (!myData) {
-      return res.status(404).send('no data for this soldier')
+      return res.status(404).send({ error: 'no data for this soldier' })
     }
     if (myData.isMashakitAprove === true) {
-      return res.status(404).send('lock by mashakit tash')
+      return res.status(404).send({ error: 'lock by mashakit tash' })
     } else if (myData.isKzinaAprove === true) {
-      return res.status(404).send('lock by kzinat tash')
+      return res.status(404).send({ error: 'lock by kzinat tash' })
     }
     res.send(myData)
   } catch (e) {
@@ -38,15 +40,25 @@ router.get('/getMyData/:teamNo', auth, async (req, res) => {
   }
 })
 
-// Get team name
-router.get('/getAllMainData', auth, async (req, res) => {
-  // try {
-  //   const user = await KlitaTeam.findByTeamID(req.user.personalNumber)
-  //   const user = user.findOne({personalNumber: req.user.personalNumber})
-  //   res.status(200).send(team.unitName)
-  // } catch (error) {
-  //   res.status(404).send({ error: error.message })
-  // }
+// Get all data in this team
+router.get('/getAllMainData/:teamNo', auth, async (req, res) => {
+  try {
+    const user = req.user
+    const team = await KlitaTeam.findOne({ teamID: req.params.teamNo })
+    if (!team) {
+      res.status(404).send({ error: 'this team does not exist' })
+    }
+    const managers = team.managers
+    managers.array.forEach(manager=> { //check if this person is manager
+      if(manager.personalNumber === user.personalNumber){
+          const allData = await Tash.find({teamNumber:team.teamID})
+          res.status(200).send(allData)
+      }
+    });
+    res.status(404).send({ error: 'you are not manager of this team' })
+  } catch (error) {
+    res.status(404).send({ error: error.message })
+  }
 })
 
 // router.post('/tasks', auth, async (req, res) => {

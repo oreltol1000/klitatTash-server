@@ -85,8 +85,8 @@ userSchema.statics.findByTeamID = async id => {
 // create foreign key KlitaTeam->Tash, to get tash data for klitaTeam
 userSchema.virtual('teamTash', {
   ref: 'Tash', //ref to tash
-  localField: 'teamNumber', // team has team.teamNumber
-  foreignField: 'teamNumber' // tash has field 'teamNumber' that has klitaTeam.teamNumber
+  localField: 'teamID', // team has team.teamNumber
+  foreignField: 'teamID' // tash has field 'teamNumber' that has klitaTeam.teamNumber
 })
 const KlitaTeam = mongoose.model('KlitaTeam', KlitaTeam)
 
