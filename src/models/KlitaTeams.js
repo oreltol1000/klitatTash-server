@@ -58,7 +58,16 @@ KlitaTeam.pre('save', async function(next) {
     personalNumber: manager.personalNumber
   })
 //check if this user exist
-if(!user){
+if(user){
+    user.personalNumber = manager.personalNumber,
+    user.populate = manager.populate ,
+    user.name = manager.name
+    try{
+    user.save()
+     }catch{
+       throw new Error('cant save this user: ' + user.personalNumber )
+     }    
+   }else if(!user){
   // create new user
     users.push(
       new User({
@@ -66,8 +75,7 @@ if(!user){
         position: manager.position,
         name: manager.name
       }).save()
-    )
-}
+    )}
   })
   next()
 })
