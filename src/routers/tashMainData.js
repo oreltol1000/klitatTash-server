@@ -3,20 +3,45 @@ const Tash = require('../models/tashMainData')
 const KlitaTeam = require('../models/KlitaTeams')
 const auth = require('../middleware/auth')
 const router = new express.Router()
+const { isManagerInThisTeam } = require('../mixin/managers')
+const { isSoldierInThisTeam } = require('../mixin/soldiers')
 
-router.post('/saveSoldierQuestionnaire', async (req, res) => {
-  try {
-    const tash = new Tash({
-      ...req.body //copy all rows from req tash
-    })
-    await tash.save()
-    res.status(201).send(tash.recordKey) //success -> send tash id
-  } catch (e) {
-    res.status(400).send(e)
+// soldier save his questionnaire
+router.post('/saveSoldierQuestionnaire/:teamNo', auth, async (req, res) => {
+  const user = req.user
+  const team = await KlitaTeam.findOne({ teamID: req.params.teamNo })
+  const myData = await Tash.find({
+    personalNumber: user.personalNumber,
+    teamID: team.teamID
+  })
+  if (myData) {
+    //if this soldier questionnaire already exist
+    if (isManagerInThisTeam(team, user) || isSoldierInThisTeam(team, user)) {
+      try {
+        myData = new Tash({
+          ...req.body //copy all rows from req tash
+        })
+        await tash.save()
+        res.status(201).send(tash.recordKey) //success -> send tash id
+      } catch (e) {
+        res.status(400).send(e)
+      }
+    }
+  } else {
+    //if this soldier questionnaire does not exist
+    try {
+      const tash = new Tash({
+        ...req.body //copy all rows from req tash
+      })
+      await tash.save()
+      res.status(201).send(tash.recordKey) //success -> send tash id
+    } catch (e) {
+      res.status(400).send(e)
+    }
   }
 })
 
-// for soldiers
+// for soldier
 router.get('/getMyData/:teamNo', auth, async (req, res) => {
   try {
     const user = req.user
@@ -40,7 +65,7 @@ router.get('/getMyData/:teamNo', auth, async (req, res) => {
   }
 })
 
-// Get all data in this team
+// Get all data in this team - for manager(mashakit/kzina)
 router.get('/getAllMainData/:teamNo', auth, async (req, res) => {
   try {
     const user = req.user
@@ -49,12 +74,12 @@ router.get('/getAllMainData/:teamNo', auth, async (req, res) => {
       res.status(404).send({ error: 'this team does not exist' })
     }
     const managers = team.managers
-    managers.array.forEach(manager=> { //check if this person is manager
-      if(manager.personalNumber === user.personalNumber){
-          const allData = await Tash.find({teamNumber:team.teamID})
-          res.status(200).send(allData)
-      }
-    });
+
+    if (isManagerInThisTeam(team, user)) {
+      const allData = await Tash.find({ teamNumber: team.teamID })
+      res.status(200).send(allData)
+    }
+
     res.status(404).send({ error: 'you are not manager of this team' })
   } catch (error) {
     res.status(404).send({ error: error.message })
