@@ -81,7 +81,7 @@ KlitaTeam.pre('save', async function(next) {
 })
 
 // when we doing a request we will not get this elements in body response
-klitaTeam.methods.toJSON = function() {
+KlitaTeam.methods.toJSON = function() {
   const team = this
 
   return team.toObject()
