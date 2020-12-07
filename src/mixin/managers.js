@@ -20,8 +20,8 @@ const closeTeamAndQuestionnaire = myTeam => {
   team.save()
   const allQuestionnaire = await tashQuestionnaire.find({teamID: myTeam.teamID})
   allQuestionnaire.forEach(questionnaire => {
-questionnaire.isEnd = true
-questionnaire.save()
+      questionnaire.isEnd = true
+      questionnaire.save()
   })
 }
 
