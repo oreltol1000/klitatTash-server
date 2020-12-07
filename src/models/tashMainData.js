@@ -36,7 +36,7 @@ const tashMainDataSchema = mongoose.Schema(
   }
 )
 
-Tash.pre('save', async function(next) {
+tashMainDataSchema.pre('save', async function(next) {
   const tashMainDataSchema = this //validate this is write and wait to send
   tashMainDataSchema.recordKey = personalNumber + Math.floor(Date.now() / 1000) //personal number+timestamp in seconds
   const user = await User.findOne({
