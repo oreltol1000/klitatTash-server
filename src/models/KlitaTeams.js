@@ -36,6 +36,11 @@ const KlitaTeam = new mongoose.Schema(
       type: Array,
       required: false,
       trim: true
+    },
+    isEnd:{
+      type: Boolean,
+      required: false,
+      trim: true
     }
   },
   {

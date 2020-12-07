@@ -29,6 +29,11 @@ const tashMainDataSchema = mongoose.Schema(
     isKzinaAprove: {
       type: Boolean,
       default: false
+    },
+    isEnd: {
+      type: Boolean,
+      required: false,
+      trim: true
     }
   },
   {

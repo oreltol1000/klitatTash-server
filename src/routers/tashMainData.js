@@ -10,6 +10,9 @@ const { isSoldierInThisTeam } = require('../mixin/soldiers')
 router.post('/saveSoldierQuestionnaire/:teamNo', auth, async (req, res) => {
   const user = req.user
   const team = await KlitaTeam.findOne({ teamID: req.params.teamNo })
+  if (!team) {
+    res.status(400).send({ error: 'this team does not exist' })
+  }
   const myData = await Tash.find({
     personalNumber: user.personalNumber,
     teamID: team.teamID
