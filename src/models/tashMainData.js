@@ -29,11 +29,6 @@ const tashMainDataSchema = mongoose.Schema(
     isKzinaAprove: {
       type: Boolean,
       default: false
-    },
-    isEnd: {
-      type: Boolean,
-      required: false,
-      trim: true
     }
   },
   {
@@ -47,7 +42,6 @@ Tash.pre('save', async function(next) {
   const user = await User.findOne({
     personalNumber: tashMainDataSchema.personalNumber
   })
-
   //if the user does not exist
   if (!user) {
     const user = new User({

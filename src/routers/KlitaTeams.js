@@ -16,29 +16,29 @@ router.post('/createNewTeam', async (req, res) => {
 
   try {
     await team.save()
-    res.status(201).send({ team })
+    res.status(201).send(team.teamID)
   } catch (e) {
     res.status(400).send(e)
   }
 })
 
 // Get team name
-router.get('/getTeamName/:teamNo', async (req, res) => {
+router.get('/getTeamName/:teamID', async (req, res) => {
   try {
-    const team = await KlitaTeam.findOne({ teamID: req.params.teamNo })
+    const team = await KlitaTeam.findOne({ teamID: req.params.teamID })
     res.status(200).send(team.unitName)
   } catch (error) {
     res.status(404).send({ error: error.message })
   }
 })
 
-router.post('/closeQuestionnaire/:teamNo', auth, async (req, res) => {
+router.post('/closeQuestionnaire/:teamID', auth, async (req, res) => {
   //createFile
   //send data to red
   //lock data
   const user = req.user
   const team = await KlitaTeam.findOne({
-    teamID: req.params.teamNo
+    teamID: req.params.teamID
   })
   if (!team) {
     res.status(404).send({ error: 'this team does not exist' })

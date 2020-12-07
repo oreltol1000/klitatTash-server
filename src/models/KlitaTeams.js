@@ -40,6 +40,7 @@ const KlitaTeam = new mongoose.Schema(
     isEnd:{
       type: Boolean,
       required: false,
+      default:false,
       trim: true
     }
   },

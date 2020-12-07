@@ -7,9 +7,9 @@ const { isManagerInThisTeam } = require('../mixin/managers')
 const { isSoldierInThisTeam } = require('../mixin/soldiers')
 
 // soldier save his questionnaire
-router.post('/saveSoldierQuestionnaire/:teamNo', auth, async (req, res) => {
+router.post('/saveSoldierQuestionnaire/:teamID', auth, async (req, res) => {
   const user = req.user
-  const team = await KlitaTeam.findOne({ teamID: req.params.teamNo })
+  const team = await KlitaTeam.findOne({ teamID: req.params.teamID })
   if (!team) {
     res.status(400).send({ error: 'this team does not exist' })
   }
@@ -45,13 +45,13 @@ router.post('/saveSoldierQuestionnaire/:teamNo', auth, async (req, res) => {
 })
 
 // for soldier
-router.get('/getMyData/:teamNo', auth, async (req, res) => {
+router.get('/getMyData/:teamID', auth, async (req, res) => {
   try {
     const user = req.user
     //get personal tash data by id*team id
     const myData = await Tash.findOne({
       personalNumber: user.personalNumber,
-      teamNumber: req.params.teamNo
+      teamNumber: req.params.teamID
     })
     //there isn't tash data for this soldier
     if (!myData) {
@@ -69,10 +69,10 @@ router.get('/getMyData/:teamNo', auth, async (req, res) => {
 })
 
 // Get all data in this team - for manager(mashakit/kzina)
-router.get('/getAllMainData/:teamNo', auth, async (req, res) => {
+router.get('/getAllMainData/:teamID', auth, async (req, res) => {
   try {
     const user = req.user
-    const team = await KlitaTeam.findOne({ teamID: req.params.teamNo })
+    const team = await KlitaTeam.findOne({ teamID: req.params.teamID })
     if (!team) {
       res.status(404).send({ error: 'this team does not exist' })
     }

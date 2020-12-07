@@ -11,21 +11,22 @@ const isManagerInThisTeam = (team, user) => {
   return false
 }
 
-const closeTeamAndQuestionnaire = myTeam => {
+const closeTeam = myTeam => {
   const team = await KlitaTeam.findOne({ teamID: myTeam.teamID })
   if(!team){
     return 'this team does not exist'
   }
   team.isEnd = true
-  team.save()
-  const allQuestionnaire = await tashQuestionnaire.find({teamID: myTeam.teamID})
-  allQuestionnaire.forEach(questionnaire => {
-      questionnaire.isEnd = true
-      questionnaire.save()
-  })
+  try{
+    await team.save()
+  }catch{
+    return 'cant delete this team'
+  }
+
+ 
 }
 
 module.exports = {
   isManagerInThisTeam,
-  closeTeamAndQuestionnaire
+  closeTeam
 }

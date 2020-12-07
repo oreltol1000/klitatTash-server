@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
+const KlitaTeam = require('../models/KlitaTeams')
 
 const auth = async (req, res, next) => {
   try {
@@ -10,10 +11,18 @@ const auth = async (req, res, next) => {
     const user = await User.findOne({
       personalNumber: '314674766' //will get it from click
     })
-
     if (!user) {
-      throw new Error()
+      throw new Error('not authorized')
     }
+
+    const team = await KlitaTeam.findOne({
+      teamID: req.params.teamID,
+      isEnd: false
+    })
+    if (!team) {
+      throw new Error('team lock or not exist')
+    }
+
     // req.token = token
     req.user = user
     next()
